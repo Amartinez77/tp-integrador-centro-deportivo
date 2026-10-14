@@ -1,4 +1,4 @@
-package ar.edu.unju.fi.logica.modelo;
+package ar.edu.unju.fi.negocio.modelo;
 
 import java.io.Serializable;
 

@@ -1,8 +1,8 @@
-package ar.edu.unju.fi.logica;
+package ar.edu.unju.fi.negocio;
 
 import ar.edu.unju.fi.datos.AccesoDatos;
 import ar.edu.unju.fi.datos.excepciones.PersistenciaException;
-import ar.edu.unju.fi.logica.modelo.Socio;
+import ar.edu.unju.fi.negocio.modelo.Socio;
 
 import java.util.HashMap;
 import java.util.List;
