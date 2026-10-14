@@ -1,4 +1,4 @@
-package ar.edu.unju.fi.logica.modelo;
+package ar.edu.unju.fi.negocio.modelo;
 
 public class SocioEstandar extends Socio {
     private static final long serialVersionUID = 1L;
