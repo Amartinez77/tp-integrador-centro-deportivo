@@ -1,6 +1,7 @@
 package ar.edu.unju.fi.negocio.modelo;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public abstract class Socio implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -14,11 +15,11 @@ public abstract class Socio implements Serializable {
         this.dni = dni;
         this.nombre = nombre;
         this.apellido = apellido;
-        this.activo=true;
+        this.activo = true;
         this.cuotaBase = cuotaBase;
     }
 
-    public abstract double calcularCoutaMensual();
+    public abstract double calcularCuotaMensual();
 
     //getters y setters
 
@@ -62,9 +63,25 @@ public abstract class Socio implements Serializable {
         this.cuotaBase = cuotaBase;
     }
 
+    // equals() y hashCode()
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Socio socio = (Socio) o;
+        return Objects.equals(dni, socio.dni);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(dni);
+    }
+
     // ToString
-
-
     @Override
     public String toString() {
         return "Socio{" +

@@ -10,7 +10,7 @@ public class SocioVIP extends Socio {
     }
 
     @Override
-    public double calcularCoutaMensual() {
+    public double calcularCuotaMensual() {
         return getCuotaBase() + recargoZonasExclusivas;
     }
 
