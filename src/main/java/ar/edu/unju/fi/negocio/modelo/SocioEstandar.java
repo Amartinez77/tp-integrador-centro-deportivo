@@ -8,7 +8,7 @@ public class SocioEstandar extends Socio {
     }
 
     @Override
-    public double calcularCoutaMensual() {
+    public double calcularCuotaMensual() {
         return getCuotaBase();
     }
 
