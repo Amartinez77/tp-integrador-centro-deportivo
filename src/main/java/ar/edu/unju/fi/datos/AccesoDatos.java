@@ -15,6 +15,8 @@ public class AccesoDatos {
     // ruta por defecto donde se guardaran los archivos serializados
     private static final String DIRECTORIO_DATOS = "datos";
     public static final String ARCHIVO_SOCIOS = DIRECTORIO_DATOS + File.separator + "Socios.txt";
+    public static final String ARCHIVO_EQUIPAMIENTO = DIRECTORIO_DATOS + File.separator + "Equipamiento.txt";
+    public static final String ARCHIVO_ALQUILERES = DIRECTORIO_DATOS + File.separator + "Alquileres.txt";
 
     public AccesoDatos(){
 
