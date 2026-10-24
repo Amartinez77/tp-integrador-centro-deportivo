@@ -1,26 +1,35 @@
 package ar.edu.unju.fi.presentacion;
 
 import ar.edu.unju.fi.datos.AccesoDatos;
-import ar.edu.unju.fi.negocio.Logica;
 import ar.edu.unju.fi.datos.excepciones.PersistenciaException;
+import ar.edu.unju.fi.negocio.Logica;
+import ar.edu.unju.fi.negocio.ControlAcceso;
+import ar.edu.unju.fi.negocio.excepciones.AccesoDenegadoException;
 
 public class Inicio {
 
     public static void main(String[] args) {
-        
-        // 1. Instanciamos la capa de datos
-        AccesoDatos accesoDatos = new AccesoDatos();
 
-        // 2. Inyectamos datos en la lógica por constructor
+        AccesoDatos accesoDatos = new AccesoDatos();
         Logica logica = new Logica(accesoDatos);
+        ControlAcceso molinete = new ControlAcceso(logica);
 
         try {
-            // 3. Probamos cargar los socios desde el archivo
             logica.cargarSocios();
+
             System.out.println("Sistema iniciado correctamente.");
 
+            // Ejemplo de prueba del molinete
+            try {
+                molinete.validarAcceso("40111222", true, false);
+                System.out.println("Acceso permitido.");
+            } catch (AccesoDenegadoException e) {
+                System.out.println(e.getMessage());
+            }
+
         } catch (PersistenciaException e) {
-            System.out.println("Error al cargar los socios: " + e.getMessage());
+            System.out.println(
+                    "Error al cargar los socios: " + e.getMessage());
         }
     }
 }
