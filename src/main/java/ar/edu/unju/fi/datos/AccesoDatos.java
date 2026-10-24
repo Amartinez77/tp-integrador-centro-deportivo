@@ -1,14 +1,22 @@
 package ar.edu.unju.fi.datos;
 
 
-import ar.edu.unju.fi.datos.excepciones.PersistenciaException;
-
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import ar.edu.unju.fi.datos.excepciones.PersistenciaException;
 
 public class AccesoDatos {
 
@@ -16,6 +24,7 @@ public class AccesoDatos {
     private static final String DIRECTORIO_DATOS = "datos";
     public static final String ARCHIVO_SOCIOS = DIRECTORIO_DATOS + File.separator + "Socios.txt";
     public static final String ARCHIVO_EQUIPAMIENTO = DIRECTORIO_DATOS + File.separator + "Equipamiento.txt";
+    public static final String ARCHIVO_RESERVAS = DIRECTORIO_DATOS + File.separator + "Reservas.txt";
     public static final String ARCHIVO_ALQUILERES = DIRECTORIO_DATOS + File.separator + "Alquileres.txt";
 
     public AccesoDatos(){
@@ -104,5 +113,45 @@ public class AccesoDatos {
 
     }
 
+    public <K extends Serializable, V extends Serializable> void guardarMapaReservas(String rutaArchivo, Map<K, V> mapa) throws PersistenciaException {
+        if (rutaArchivo == null || rutaArchivo.isBlank()) {
+            throw new IllegalArgumentException("La ruta del archivo no puede ser nula.");
+        }
+        if (mapa == null) {
+            throw new IllegalArgumentException("El mapa no puede ser nulo.");
+        }
+
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(rutaArchivo))) {
+            oos.writeObject(mapa);
+        } catch (IOException e) {
+            throw new PersistenciaException("Error al guardar el mapa en el archivo: " + rutaArchivo, e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public <K, V> Map<K, V> leerMapaReservas(String rutaArchivo) throws PersistenciaException {
+        if (rutaArchivo == null || rutaArchivo.isBlank()) {
+            throw new IllegalArgumentException("La ruta del archivo no puede ser nula.");
+        }
+
+        File archivo = new File(rutaArchivo);
+        if (!archivo.exists() || archivo.length() == 0) {
+            return new HashMap<>();
+        }
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(archivo))) {
+            Object obj = ois.readObject();
+            if (obj instanceof Map<?, ?>) {
+                return (Map<K, V>) obj;
+            } else {
+                throw new PersistenciaException("Formato no válido: el archivo no contiene un mapa serializado.");
+            }
+        } catch (ClassNotFoundException e) {
+            throw new PersistenciaException("Error de compatibilidad: clase no encontrada al deserializar en " + rutaArchivo, e);
+        } catch (IOException e) {
+            throw new PersistenciaException("Error de E/S al leer los datos desde: " + rutaArchivo, e);
+        }
+    }
 }
+
 
