@@ -193,11 +193,13 @@ public class Logica {
     }
 
     public void cargarAlquileres() throws PersistenciaException {
-        equipamientos = accesoDatos.leer(AccesoDatos.ARCHIVO_ALQUILERES);
+        // Asignamos a alquileres, no a equipamientos
+        this.alquileres = accesoDatos.leer(AccesoDatos.ARCHIVO_EQUIPAMIENTO);
     }
 
     public void guardarAlquileres() throws PersistenciaException {
-        accesoDatos.guardar(AccesoDatos.ARCHIVO_ALQUILERES, alquileres);
+        // Persiste en Equipamientos.txt cumpliendo con lo de 4 archivos
+        accesoDatos.guardar(AccesoDatos.ARCHIVO_EQUIPAMIENTO, this.alquileres);
     }
 
 

@@ -11,7 +11,7 @@ public class SocioVitalicio extends Socio {
 
     @Override
     public double calcularCuotaMensual() {
-        return getCuotaBase() * (1.0 - (porcentajeDescuento / 100.0));
+        return getCuotaBase() * (1.0 - (this.porcentajeDescuento / 100.0));
     }
 
     public double getPorcentajeDescuento() {
