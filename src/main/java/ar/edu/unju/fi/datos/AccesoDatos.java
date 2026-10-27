@@ -113,7 +113,7 @@ public class AccesoDatos {
 
     }
 
-    public <K extends Serializable, V extends Serializable> void guardarMapaReservas(String rutaArchivo, Map<K, V> mapa) throws PersistenciaException {
+    public void guardarMapaReservas(String rutaArchivo, Map<?, ?> mapa) throws PersistenciaException {
         if (rutaArchivo == null || rutaArchivo.isBlank()) {
             throw new IllegalArgumentException("La ruta del archivo no puede ser nula.");
         }
