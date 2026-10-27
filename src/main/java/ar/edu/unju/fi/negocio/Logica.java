@@ -3,12 +3,15 @@ package ar.edu.unju.fi.negocio;
 import ar.edu.unju.fi.datos.AccesoDatos;
 import ar.edu.unju.fi.datos.excepciones.PersistenciaException;
 import ar.edu.unju.fi.negocio.excepciones.DatoInvalidoException;
+import ar.edu.unju.fi.negocio.excepciones.ReservaDuplicadaException;
 import ar.edu.unju.fi.negocio.excepciones.SocioDuplicadoException;
 import ar.edu.unju.fi.negocio.modelo.Alquiler;
 import ar.edu.unju.fi.negocio.modelo.Equipamiento;
+import ar.edu.unju.fi.negocio.modelo.Reserva;
 import ar.edu.unju.fi.negocio.modelo.Socio;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class Logica {
@@ -28,9 +31,10 @@ public class Logica {
             throw new IllegalArgumentException("AccesoDatos no puede ser nulo en la composición del sistema");
         }
         this.accesoDatos = accesoDatos;
-        socios = new HashMap<>();
+        this.socios = new HashMap<>();
         this.equipamientos = new ArrayList<>();
         this.alquileres = new ArrayList<>();
+        this.reservasPorActividad = new HashMap<>(); // <-- Inicialización de la colección anidada
 
     }
 
@@ -193,14 +197,103 @@ public class Logica {
     }
 
     public void cargarAlquileres() throws PersistenciaException {
-        equipamientos = accesoDatos.leer(AccesoDatos.ARCHIVO_ALQUILERES);
+        // Asignamos a alquileres, no a equipamientos
+        this.alquileres = accesoDatos.leer(AccesoDatos.ARCHIVO_EQUIPAMIENTO);
     }
 
     public void guardarAlquileres() throws PersistenciaException {
-        accesoDatos.guardar(AccesoDatos.ARCHIVO_ALQUILERES, alquileres);
+        // Persiste en Equipamientos.txt cumpliendo con lo de 4 archivos
+        accesoDatos.guardar(AccesoDatos.ARCHIVO_EQUIPAMIENTO, this.alquileres);
     }
 
+    // Colección anidada para actividades y reservas del Sprint 2
+    private Map<String, Set<Reserva>> reservasPorActividad;
 
+    // ==========================================
+    // MÓDULO DE RESERVAS Y ACTIVIDADES (TS2-02)
+    // ==========================================
+
+    /**
+     * Registra una reserva verificando que el socio exista, esté activo
+     * y no posea una inscripción previa a la misma clase en el mismo horario.
+     *
+     * @throws DatoInvalidoException     Si faltan datos o el socio no existe.
+     * @throws ReservaDuplicadaException Si el Set rechaza la reserva por duplicado.
+     */
+    public Reserva registrarReserva(String idReserva, String codigoActividad, String dniSocio, LocalDateTime fechaHora)
+            throws DatoInvalidoException, ReservaDuplicadaException {
+
+        if (idReserva == null || idReserva.isBlank()) {
+            throw new DatoInvalidoException("El ID de la reserva es obligatorio");
+        }
+
+        if (codigoActividad == null || codigoActividad.isBlank()) {
+            throw new DatoInvalidoException("El código de actividad es obligatorio.");
+        }
+        if (dniSocio == null || dniSocio.isBlank()) {
+            throw new DatoInvalidoException("El DNI del socio es obligatorio.");
+        }
+        if (fechaHora == null) {
+            throw new DatoInvalidoException("La fecha y hora son obligatorias.");
+        }
+
+        Socio socio = buscarSocio(dniSocio);
+        if (socio == null) {
+            throw new DatoInvalidoException("No existe un socio registrado con el DNI: " + dniSocio);
+        }
+        if (!socio.isActivo()) {
+            throw new DatoInvalidoException("El socio se encuentra inactivo y no puede realizar reservas[cite: 1].");
+        }
+
+        String claveActividad = codigoActividad.trim().toUpperCase();
+
+        // Obtenemos o creamos el Set asignado a la actividad dentro del Map
+        reservasPorActividad.putIfAbsent(claveActividad, new HashSet<>());
+        Set<Reserva> conjuntoReservas = reservasPorActividad.get(claveActividad);
+
+        Reserva nuevaReserva = new Reserva(idReserva, claveActividad, socio, fechaHora);
+
+        // El Set.add() retorna false si el elemento ya existe según equals() y hashCode()[cite: 1]
+        boolean agregada = conjuntoReservas.add(nuevaReserva);
+        if (!agregada) {
+            throw new ReservaDuplicadaException("El socio " + socio.getApellido() +
+                    " ya cuenta con una reserva activa para la actividad " + claveActividad +
+                    " en el horario: " + fechaHora);
+        }
+
+        return nuevaReserva;
+    }
+
+    /**
+     * Retorna una vista protegida de las reservas para una actividad determinada.
+     */
+    public Set<Reserva> obtenerReservasPorActividad(String codigoActividad) {
+        if (codigoActividad == null || codigoActividad.isBlank()) {
+            return Collections.emptySet();
+        }
+        Set<Reserva> reservas = reservasPorActividad.get(codigoActividad.trim().toUpperCase());
+        if (reservas == null) {
+            return Collections.emptySet();
+        }
+        return Collections.unmodifiableSet(reservas);
+    }
+
+    /**
+     * Persiste el mapa anidado completo de reservas en Reservas.txt[cite: 1].
+     */
+    public void guardarReservas() throws PersistenciaException {
+        accesoDatos.guardarMapaReservas(AccesoDatos.ARCHIVO_RESERVAS, this.reservasPorActividad);
+    }
+
+    /**
+     * Carga el mapa de reservas desde Reservas.txt al iniciar el sistema[cite: 1].
+     */
+    public void cargarReservas() throws PersistenciaException {
+        this.reservasPorActividad = accesoDatos.leerMapaReservas(AccesoDatos.ARCHIVO_RESERVAS);
+        if (this.reservasPorActividad == null) {
+            this.reservasPorActividad = new HashMap<>();
+        }
+    }
 
 
 }

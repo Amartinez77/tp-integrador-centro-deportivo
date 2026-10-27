@@ -25,7 +25,7 @@ public class AccesoDatos {
     public static final String ARCHIVO_SOCIOS = DIRECTORIO_DATOS + File.separator + "Socios.txt";
     public static final String ARCHIVO_EQUIPAMIENTO = DIRECTORIO_DATOS + File.separator + "Equipamiento.txt";
     public static final String ARCHIVO_RESERVAS = DIRECTORIO_DATOS + File.separator + "Reservas.txt";
-    public static final String ARCHIVO_ALQUILERES = DIRECTORIO_DATOS + File.separator + "Alquileres.txt";
+    public static final String ARCHIVO_FACTURAS = DIRECTORIO_DATOS + File.separator + "Facturas.txt";
 
     public AccesoDatos(){
 
@@ -113,7 +113,7 @@ public class AccesoDatos {
 
     }
 
-    public <K extends Serializable, V extends Serializable> void guardarMapaReservas(String rutaArchivo, Map<K, V> mapa) throws PersistenciaException {
+    public void guardarMapaReservas(String rutaArchivo, Map<?, ?> mapa) throws PersistenciaException {
         if (rutaArchivo == null || rutaArchivo.isBlank()) {
             throw new IllegalArgumentException("La ruta del archivo no puede ser nula.");
         }
