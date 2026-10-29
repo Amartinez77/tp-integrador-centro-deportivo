@@ -5,7 +5,7 @@ import ar.edu.unju.fi.negocio.modelo.Socio;
 
 public class ControlAcceso {
 
-    private Logica logica;
+    private final Logica logica;
 
     public ControlAcceso(Logica logica) {
         if (logica == null) {
@@ -16,9 +16,20 @@ public class ControlAcceso {
         this.logica = logica;
     }
 
-    // Valida si un socio puede ingresar al centro deportivo
-    public boolean validarAcceso(String dni, boolean cuotasAlDia,
-            boolean sancionVigente) throws AccesoDenegadoException {
+    /**
+     * Valida si un socio puede ingresar al centro deportivo.
+     *
+     * @param dni            DNI del socio que intenta ingresar.
+     * @param cuotasAlDia    indica si tiene las cuotas al día.
+     * @param sancionVigente indica si tiene una sanción vigente.
+     * @return true si el acceso está permitido.
+     * @throws AccesoDenegadoException si no cumple alguna condición.
+     */
+    public boolean validarAcceso(
+            String dni,
+            boolean cuotasAlDia,
+            boolean sancionVigente)
+            throws AccesoDenegadoException {
 
         if (dni == null || dni.isBlank()) {
             throw new AccesoDenegadoException(
