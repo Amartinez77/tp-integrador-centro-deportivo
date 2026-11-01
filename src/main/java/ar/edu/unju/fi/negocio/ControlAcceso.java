@@ -1,8 +1,13 @@
+
 package ar.edu.unju.fi.negocio;
 
 import ar.edu.unju.fi.negocio.excepciones.AccesoDenegadoException;
 import ar.edu.unju.fi.negocio.modelo.Socio;
 
+/**
+ * Controla el ingreso al centro deportivo.
+ * Consulta el estado del socio mediante la fachada Logica.
+ */
 public class ControlAcceso {
 
     private final Logica logica;
@@ -17,18 +22,13 @@ public class ControlAcceso {
     }
 
     /**
-     * Valida si un socio puede ingresar al centro deportivo.
+     * Valida el acceso de un socio.
      *
-     * @param dni            DNI del socio que intenta ingresar.
-     * @param cuotasAlDia    indica si tiene las cuotas al día.
-     * @param sancionVigente indica si tiene una sanción vigente.
+     * @param dni DNI del socio que intenta ingresar.
      * @return true si el acceso está permitido.
-     * @throws AccesoDenegadoException si no cumple alguna condición.
+     * @throws AccesoDenegadoException si el socio no está habilitado.
      */
-    public boolean validarAcceso(
-            String dni,
-            boolean cuotasAlDia,
-            boolean sancionVigente)
+    public boolean validarAcceso(String dni)
             throws AccesoDenegadoException {
 
         if (dni == null || dni.isBlank()) {
@@ -36,26 +36,26 @@ public class ControlAcceso {
                     "Debe ingresar un DNI válido.");
         }
 
-        Socio socio = logica.buscarSocio(dni.trim());
+        String documento = dni.trim();
+
+        // Consultar si el socio existe.
+        Socio socio = logica.buscarSocio(documento);
 
         if (socio == null) {
             throw new AccesoDenegadoException(
                     "Acceso rechazado: no existe un socio con ese DNI.");
         }
 
+        // Consultar si el socio está activo.
         if (!socio.isActivo()) {
             throw new AccesoDenegadoException(
                     "Acceso rechazado: el socio está inactivo.");
         }
 
-        if (!cuotasAlDia) {
+        // Consultar el estado de las cuotas mediante la fachada.
+        if (!logica.tieneCuotasAlDia(documento)) {
             throw new AccesoDenegadoException(
-                    "Acceso rechazado: el socio tiene cuotas vencidas.");
-        }
-
-        if (sancionVigente) {
-            throw new AccesoDenegadoException(
-                    "Acceso rechazado: el socio tiene una sanción vigente.");
+                    "Acceso rechazado: el socio tiene cuotas vencidas o no hay información de pagos.");
         }
 
         return true;
