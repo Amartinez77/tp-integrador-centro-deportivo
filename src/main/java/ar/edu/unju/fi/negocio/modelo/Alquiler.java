@@ -3,6 +3,7 @@ package ar.edu.unju.fi.negocio.modelo;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 
 public class Alquiler implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -17,6 +18,23 @@ public class Alquiler implements Serializable {
     private boolean devuelto;
 
     public Alquiler(String idAlquiler, Socio socio, Equipamiento equipamiento, LocalDate fechaAlquiler, int diasPrestamo) {
+
+        if (idAlquiler == null || idAlquiler.isBlank()) {
+            throw new IllegalArgumentException("El ID del alquiler es obligatorio.");
+        }
+        if (socio == null) {
+            throw new IllegalArgumentException("El socio es obligatorio.");
+        }
+        if (equipamiento == null) {
+            throw new IllegalArgumentException("El equipamiento es obligatorio.");
+        }
+        if (fechaAlquiler == null) {
+            throw new IllegalArgumentException("La fecha de alquiler es obligatoria.");
+        }
+        if (diasPrestamo <= 0) {
+            throw new IllegalArgumentException("Los días de préstamo deben ser mayores a cero.");
+        }
+
         this.idAlquiler = idAlquiler;
         this.socio = socio;
         this.equipamiento = equipamiento;
@@ -28,6 +46,17 @@ public class Alquiler implements Serializable {
     }
 
     public double registrarDevolucion(LocalDate fechaDevolucion, double tarifaMoraDiaria) {
+
+        if (fechaDevolucion == null) {
+            throw new IllegalArgumentException("La fecha de devolución real no puede ser nula.");
+        }
+        if (fechaDevolucion.isBefore(this.fechaAlquiler)) {
+            throw new IllegalArgumentException("La fecha de devolución no puede ser anterior a la fecha de inicio del alquiler.");
+        }
+        if (tarifaMoraDiaria < 0) {
+            throw new IllegalArgumentException("La tarifa de mora diaria no puede ser negativa.");
+        }
+
         this.fechaDevolucionReal = fechaDevolucion;
         this.devuelto = true;
         this.equipamiento.setDisponible(true);
@@ -103,6 +132,18 @@ public class Alquiler implements Serializable {
 
     public void setDevuelto(boolean devuelto) {
         this.devuelto = devuelto;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Alquiler alquiler)) return false;
+        return Objects.equals(idAlquiler, alquiler.idAlquiler);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(idAlquiler);
     }
 
     @Override
