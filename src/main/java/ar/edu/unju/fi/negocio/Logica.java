@@ -24,10 +24,10 @@ import java.util.*;
  */
 public class Logica {
 
+    private final Facturacion facturacion;
     private final SocioService socioService;
     private final EquipamientoService equipamientoService;
     private final ReservaService reservaService;
-
 
     public Logica(AccesoDatos accesoDatos) {
         if (accesoDatos == null) {
@@ -36,6 +36,7 @@ public class Logica {
         this.socioService = new SocioService(accesoDatos);
         this.equipamientoService = new EquipamientoService(accesoDatos);
         this.reservaService = new ReservaService(accesoDatos);
+        this.facturacion = new Facturacion();
     }
 
     // ==========================================
@@ -67,6 +68,24 @@ public class Logica {
     }
 
     // ==========================================
+    // DELEGACIÓN: MÓDULO DE FACTURACIÓN
+    // ==========================================
+
+    /**
+     * Consulta si el socio tiene sus cuotas al día.
+     */
+    public boolean tieneCuotasAlDia(String dni) {
+        return facturacion.tieneCuotasAlDia(dni);
+    }
+
+    /**
+     * Registra el estado de cuotas del socio.
+     */
+    public void registrarEstadoCuotas(String dni, boolean alDia) {
+        facturacion.registrarEstadoCuotas(dni, alDia);
+    }
+
+    // ==========================================
     // DELEGACIÓN: EQUIPAMIENTO Y ALQUILERES
     // ==========================================
 
@@ -74,7 +93,8 @@ public class Logica {
         equipamientoService.registrarEquipamiento(equipamiento);
     }
 
-    public Alquiler alquilarEquipamiento(String idAlquiler, String dniSocio, String codigoEquipamiento, int diasPrestamo)
+    public Alquiler alquilarEquipamiento(String idAlquiler, String dniSocio, String codigoEquipamiento,
+            int diasPrestamo)
             throws DatoInvalidoException {
         Socio socio = socioService.buscarSocio(dniSocio);
         if (socio == null) {
@@ -151,6 +171,5 @@ public class Logica {
     public void guardarReservas() throws PersistenciaException {
         reservaService.guardarReservas();
     }
-
 
 }

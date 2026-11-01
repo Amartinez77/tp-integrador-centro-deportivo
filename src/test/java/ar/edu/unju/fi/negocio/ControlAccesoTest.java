@@ -1,3 +1,4 @@
+
 package ar.edu.unju.fi.negocio;
 
 import ar.edu.unju.fi.datos.AccesoDatos;
@@ -17,6 +18,7 @@ class ControlAccesoTest {
 
     @BeforeEach
     void setUp() throws Exception {
+
         logica = new Logica(new AccesoDatos());
 
         Socio socio = new SocioEstandar(
@@ -31,52 +33,60 @@ class ControlAccesoTest {
     }
 
     @Test
-    void socioHabilitadoPuedeIngresar() throws Exception {
-        assertTrue(
-                molinete.validarAcceso(
-                        "30123456", true, false));
+    void socioHabilitadoPuedeIngresar() throws AccesoDenegadoException {
+
+        logica.registrarEstadoCuotas("30123456", true);
+
+        assertTrue(molinete.validarAcceso("30123456"));
     }
 
     @Test
     void dniInexistenteRechazaIngreso() {
-        assertThrows(
-                AccesoDenegadoException.class,
-                () -> molinete.validarAcceso(
-                        "99999999", true, false));
+
+        assertThrows(AccesoDenegadoException.class,
+                () -> molinete.validarAcceso("99999999"));
     }
 
     @Test
-    void socioInactivoRechazaIngreso() throws Exception {
+    void socioInactivoRechazaIngreso() {
+
         Socio socio = logica.buscarSocio("30123456");
+
         socio.setActivo(false);
 
-        assertThrows(
-                AccesoDenegadoException.class,
-                () -> molinete.validarAcceso(
-                        "30123456", true, false));
+        logica.registrarEstadoCuotas("30123456", true);
+
+        assertThrows(AccesoDenegadoException.class,
+                () -> molinete.validarAcceso("30123456"));
     }
 
     @Test
     void socioConCuotasVencidasRechazaIngreso() {
-        assertThrows(
-                AccesoDenegadoException.class,
-                () -> molinete.validarAcceso(
-                        "30123456", false, false));
+
+        logica.registrarEstadoCuotas("30123456", false);
+
+        assertThrows(AccesoDenegadoException.class,
+                () -> molinete.validarAcceso("30123456"));
     }
 
     @Test
-    void socioConSancionRechazaIngreso() {
-        assertThrows(
-                AccesoDenegadoException.class,
-                () -> molinete.validarAcceso(
-                        "30123456", true, true));
+    void socioSinInformacionDeCuotasRechazaIngreso() {
+
+        assertThrows(AccesoDenegadoException.class,
+                () -> molinete.validarAcceso("30123456"));
     }
 
     @Test
     void dniVacioRechazaIngreso() {
-        assertThrows(
-                AccesoDenegadoException.class,
-                () -> molinete.validarAcceso(
-                        " ", true, false));
+
+        assertThrows(AccesoDenegadoException.class,
+                () -> molinete.validarAcceso(" "));
+    }
+
+    @Test
+    void constructorRechazaLogicaNula() {
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new ControlAcceso(null));
     }
 }
