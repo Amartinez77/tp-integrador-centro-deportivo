@@ -69,4 +69,7 @@ public class SocioService {
         accesoDatos.guardar(AccesoDatos.ARCHIVO_SOCIOS, lista);
     }
 
+    public Map<String, Socio> getMapaSocios() {
+        return Collections.unmodifiableMap(socios);
+    }
 }

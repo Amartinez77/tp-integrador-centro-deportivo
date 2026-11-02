@@ -1,7 +1,7 @@
 package ar.edu.unju.fi.negocio.modelo;
 
 import java.io.Serializable;
-import java.util.Objects;
+import java.util.*;
 
 public abstract class Socio implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -10,6 +10,8 @@ public abstract class Socio implements Serializable {
     private String apellido;
     private boolean activo;
     private double cuotaBase;
+
+    private Map<String, List<Factura>> historialFacturas = new HashMap<>();
 
     public Socio(String dni, String nombre, String apellido, double cuotaBase) {
         this.dni = dni;
@@ -20,6 +22,31 @@ public abstract class Socio implements Serializable {
     }
 
     public abstract double calcularCuotaMensual();
+
+    /**
+     * Agrega una factura al periodo fiscal correspondiente al mapa anidado
+     */
+    public void agregarFactura(Factura factura) {
+        String periodo = factura.getPeriodoFiscal();
+        historialFacturas.putIfAbsent(periodo, new ArrayList<>());
+        historialFacturas.get(periodo).add(factura);
+    }
+
+    /**
+     * Retorna las facturas emitidas para un periodo fiscal especifico
+     */
+
+    public List<Factura> getFacturaPorPeriodo(String periodoFiscal) {
+        return historialFacturas.getOrDefault(periodoFiscal, new ArrayList<>());
+    }
+
+    /**
+     * Retorna la coleccion completa de facturas agrupadas por periodo
+     */
+    public Map<String, List<Factura>> getHistorialFacturas() {
+        return historialFacturas;
+    }
+
 
     //getters y setters
 
