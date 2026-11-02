@@ -5,11 +5,9 @@ import ar.edu.unju.fi.datos.excepciones.PersistenciaException;
 import ar.edu.unju.fi.negocio.excepciones.DatoInvalidoException;
 import ar.edu.unju.fi.negocio.excepciones.ReservaDuplicadaException;
 import ar.edu.unju.fi.negocio.excepciones.SocioDuplicadoException;
-import ar.edu.unju.fi.negocio.modelo.Alquiler;
-import ar.edu.unju.fi.negocio.modelo.Equipamiento;
-import ar.edu.unju.fi.negocio.modelo.Reserva;
-import ar.edu.unju.fi.negocio.modelo.Socio;
+import ar.edu.unju.fi.negocio.modelo.*;
 import ar.edu.unju.fi.negocio.servicios.EquipamientoService;
+import ar.edu.unju.fi.negocio.servicios.FacturaService;
 import ar.edu.unju.fi.negocio.servicios.ReservaService;
 import ar.edu.unju.fi.negocio.servicios.SocioService;
 
@@ -24,7 +22,7 @@ import java.util.*;
  */
 public class Logica {
 
-    private final Facturacion facturacion;
+    private final FacturaService facturaService;
     private final SocioService socioService;
     private final EquipamientoService equipamientoService;
     private final ReservaService reservaService;
@@ -36,7 +34,8 @@ public class Logica {
         this.socioService = new SocioService(accesoDatos);
         this.equipamientoService = new EquipamientoService(accesoDatos);
         this.reservaService = new ReservaService(accesoDatos);
-        this.facturacion = new Facturacion();
+        this.facturaService = new FacturaService(accesoDatos);
+        ;
     }
 
     // ==========================================
@@ -75,15 +74,45 @@ public class Logica {
      * Consulta si el socio tiene sus cuotas al día.
      */
     public boolean tieneCuotasAlDia(String dni) {
-        return facturacion.tieneCuotasAlDia(dni);
+        return facturaService.tieneCuotasAlDia(dni);
     }
 
     /**
      * Registra el estado de cuotas del socio.
      */
     public void registrarEstadoCuotas(String dni, boolean alDia) {
-        facturacion.registrarEstadoCuotas(dni, alDia);
+        facturaService.registrarEstadoCuotas(dni, alDia);
     }
+
+    /**
+     * Emite la Factura mensual utilizando el calculo polimorfico de la cuota
+     */
+    public Factura emitirFacturaCuota(String numeroFactura, String dniSocio, String periodoFiscal) throws DatoInvalidoException {
+        Socio socio = socioService.buscarSocio(dniSocio);
+        if (socio == null) {
+            throw new DatoInvalidoException("No existe Socio registrado con el DNI");
+        }
+        return facturaService.emitirFacturaCuota(numeroFactura, socio, periodoFiscal);
+    }
+
+    /**
+     * Consulta el historial de facturas del socio para un periodo fiscal especifico
+     */
+    public List<Factura> obtenerFacturasDeSocioPorPeriodo(String dniSocio, String periodoFiscal){
+        Socio socio = socioService.buscarSocio(dniSocio);
+        if(socio==null) return new ArrayList<>();
+        return socio.getFacturaPorPeriodo(periodoFiscal);
+    }
+    public List<Factura> obtenerTodasLasFacturas(){
+        return facturaService.obtenerTodasLasFacturas();
+    }
+    public void cargarFacturas() throws PersistenciaException{
+        facturaService.cargarFacturas(socioService.getMapaSocios());
+    }
+    public void guardarFacturas() throws PersistenciaException{
+        facturaService.guardarFacturas();
+    }
+
 
     // ==========================================
     // DELEGACIÓN: EQUIPAMIENTO Y ALQUILERES
@@ -94,7 +123,7 @@ public class Logica {
     }
 
     public Alquiler alquilarEquipamiento(String idAlquiler, String dniSocio, String codigoEquipamiento,
-            int diasPrestamo)
+                                         int diasPrestamo)
             throws DatoInvalidoException {
         Socio socio = socioService.buscarSocio(dniSocio);
         if (socio == null) {
