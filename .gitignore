@@ -35,6 +35,7 @@ hs_err_pid*
 replay_pid*
 
 # Archivos de datos serializados (de prueba local)
+datos/
 *.tmp
 *.bak
 .DS_Store

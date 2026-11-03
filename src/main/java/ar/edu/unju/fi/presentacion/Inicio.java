@@ -16,6 +16,11 @@ public class Inicio {
 
             System.out.println("Sistema iniciado correctamente.");
 
+         // Instanciar el Menú Principal (Capa de Presentación) 
+         
+            MenuPrincipal menuPrincipal = new MenuPrincipal(logica);
+            menuPrincipal.mostrarMenu();
+
         } catch (PersistenciaException e) {
 
             System.out.println(
