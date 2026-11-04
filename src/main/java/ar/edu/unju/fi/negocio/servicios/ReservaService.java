@@ -69,6 +69,21 @@ public class ReservaService {
         return Collections.unmodifiableSet(reservas);
     }
 
+
+    /**
+     * Retorna una copia del mapa completo de reservas agrupadas por actividad.
+     * Se copian también los conjuntos para no exponer las colecciones internas.
+     */
+    public Map<String, Set<Reserva>> obtenerTodasLasReservasPorActividad() {
+        Map<String, Set<Reserva>> copia = new HashMap<>();
+
+        for (Map.Entry<String, Set<Reserva>> entrada : reservasPorActividad.entrySet()) {
+            copia.put(entrada.getKey(), new HashSet<>(entrada.getValue()));
+        }
+
+        return copia;
+    }
+
     public void guardarReservas() throws PersistenciaException {
         accesoDatos.guardarMapaReservas(AccesoDatos.ARCHIVO_RESERVAS, this.reservasPorActividad);
     }

@@ -7,11 +7,13 @@ import java.util.Scanner;
 import ar.edu.unju.fi.datos.excepciones.PersistenciaException;
 import ar.edu.unju.fi.negocio.ControlAcceso;
 import ar.edu.unju.fi.negocio.Logica;
+import ar.edu.unju.fi.negocio.Reportes;
 import ar.edu.unju.fi.negocio.excepciones.AccesoDenegadoException;
 import ar.edu.unju.fi.negocio.excepciones.DatoInvalidoException;
 import ar.edu.unju.fi.negocio.excepciones.NegocioException;
 import ar.edu.unju.fi.negocio.excepciones.ReservaDuplicadaException;
 import ar.edu.unju.fi.negocio.excepciones.SocioDuplicadoException;
+import ar.edu.unju.fi.negocio.modelo.ActividadReporte;
 import ar.edu.unju.fi.negocio.modelo.Equipamiento;
 import ar.edu.unju.fi.negocio.modelo.Socio;
 import ar.edu.unju.fi.negocio.modelo.SocioEstandar;
@@ -41,7 +43,8 @@ public class MenuPrincipal {
                 System.out.println("3. Alquiler de Equipamiento");
                 System.out.println("4. Reservas de Actividades");
                 System.out.println("5. Facturación y Comprobantes");
-                System.out.println("6. Salir");
+                System.out.println("6. Reportes");
+                System.out.println("7. Salir");
                 System.out.print("Seleccione una opción: ");
 
                 opcion = Integer.parseInt(scanner.nextLine());
@@ -63,6 +66,10 @@ public class MenuPrincipal {
                         menuFacturacion();
                         break;
                     case 6:
+                        menuReportes();
+                        break;
+
+                    case 7:
                         guardarTodo();
                         System.out.println("¡Saliendo del sistema. Hasta luego!");
                         break;
@@ -99,7 +106,7 @@ public class MenuPrincipal {
             System.out.print("Cuota Base: ");
             double cuotaBase = Double.parseDouble(scanner.nextLine());
 
-           Socio socio = null;
+            Socio socio = null;
             if (tipo == 1) {
                 socio = new SocioEstandar(dni, nombre, apellido, cuotaBase);
             } else if (tipo == 2) {
@@ -251,6 +258,70 @@ public class MenuPrincipal {
             } else {
                 System.out.println("No se encontró al socio para emitir el comprobante.");
             }
+        }
+    }
+
+    private void menuReportes() {
+
+        Reportes reportes = new Reportes();
+
+        System.out.println("\n--- MÓDULO DE REPORTES ---");
+        System.out.println("1. Socios por apellido y nombre");
+        System.out.println("2. Socios por cuota mensual");
+        System.out.println("3. Actividades con más reservas");
+        System.out.println("4. Buscar socio por DNI");
+        System.out.print("Seleccione una opción: ");
+
+        int opcion = Integer.parseInt(scanner.nextLine());
+
+        switch (opcion) {
+
+            case 1:
+                for (Socio socio : reportes.ordenarSociosPorApellido(
+                        logica.obtenerTodosLosSocios())) {
+
+                    System.out.println(socio.getApellido() + ", "
+                            + socio.getNombre());
+                }
+                break;
+
+            case 2:
+                for (Socio socio : reportes.ordenarSociosPorCuota(
+                        logica.obtenerTodosLosSocios())) {
+
+                    System.out.println(socio.getApellido() + ", "
+                            + socio.getNombre()
+                            + " | Cuota: $"
+                            + socio.calcularCuotaMensual());
+                }
+                break;
+
+            case 3:
+                for (ActividadReporte actividad : reportes.ordenarActividades(
+                        logica.obtenerTodasLasReservasPorActividad())) {
+
+                    System.out.println(actividad);
+                }
+                break;
+
+            case 4:
+                System.out.print("Ingrese DNI: ");
+                String dni = scanner.nextLine();
+
+                Socio encontrado = reportes.buscarSocioPorDni(
+                        logica.obtenerTodosLosSocios(), dni);
+
+                if (encontrado != null) {
+                    System.out.println("Socio encontrado: "
+                            + encontrado.getApellido() + ", "
+                            + encontrado.getNombre());
+                } else {
+                    System.out.println("No se encontró el socio.");
+                }
+                break;
+
+            default:
+                System.out.println("Opción inválida.");
         }
     }
 

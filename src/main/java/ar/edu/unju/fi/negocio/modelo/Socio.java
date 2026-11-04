@@ -3,7 +3,7 @@ package ar.edu.unju.fi.negocio.modelo;
 import java.io.Serializable;
 import java.util.*;
 
-public abstract class Socio implements Serializable {
+public abstract class Socio implements Comparable<Socio>, Serializable {
     private static final long serialVersionUID = 1L;
     private String dni;
     private String nombre;
@@ -47,8 +47,7 @@ public abstract class Socio implements Serializable {
         return historialFacturas;
     }
 
-
-    //getters y setters
+    // getters y setters
 
     public String getDni() {
         return dni;
@@ -106,6 +105,19 @@ public abstract class Socio implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(dni);
+    }
+
+    @Override
+    public int compareTo(Socio otro) {
+        int resultado = this.getApellido()
+                .compareToIgnoreCase(otro.getApellido());
+
+        if (resultado == 0) {
+            resultado = this.getNombre()
+                    .compareToIgnoreCase(otro.getNombre());
+        }
+
+        return resultado;
     }
 
     // ToString

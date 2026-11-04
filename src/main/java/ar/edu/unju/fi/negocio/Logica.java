@@ -15,6 +15,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Fachada (Facade) principal de la capa de Negocio.
  * Proporciona un punto de entrada unificado para la capa de Presentación,
@@ -36,6 +41,14 @@ public class Logica {
         this.reservaService = new ReservaService(accesoDatos);
         this.facturaService = new FacturaService(accesoDatos);
         ;
+    }
+
+    /**
+     * Obtiene todas las reservas agrupadas por actividad.
+     * La copia es proporcionada por ReservaService.
+     */
+    public Map<String, Set<Reserva>> obtenerTodasLasReservasPorActividad() {
+        return reservaService.obtenerTodasLasReservasPorActividad();
     }
 
     // ==========================================
@@ -87,7 +100,8 @@ public class Logica {
     /**
      * Emite la Factura mensual utilizando el calculo polimorfico de la cuota
      */
-    public Factura emitirFacturaCuota(String numeroFactura, String dniSocio, String periodoFiscal) throws DatoInvalidoException {
+    public Factura emitirFacturaCuota(String numeroFactura, String dniSocio, String periodoFiscal)
+            throws DatoInvalidoException {
         Socio socio = socioService.buscarSocio(dniSocio);
         if (socio == null) {
             throw new DatoInvalidoException("No existe Socio registrado con el DNI");
@@ -98,21 +112,24 @@ public class Logica {
     /**
      * Consulta el historial de facturas del socio para un periodo fiscal especifico
      */
-    public List<Factura> obtenerFacturasDeSocioPorPeriodo(String dniSocio, String periodoFiscal){
+    public List<Factura> obtenerFacturasDeSocioPorPeriodo(String dniSocio, String periodoFiscal) {
         Socio socio = socioService.buscarSocio(dniSocio);
-        if(socio==null) return new ArrayList<>();
+        if (socio == null)
+            return new ArrayList<>();
         return socio.getFacturaPorPeriodo(periodoFiscal);
     }
-    public List<Factura> obtenerTodasLasFacturas(){
+
+    public List<Factura> obtenerTodasLasFacturas() {
         return facturaService.obtenerTodasLasFacturas();
     }
-    public void cargarFacturas() throws PersistenciaException{
+
+    public void cargarFacturas() throws PersistenciaException {
         facturaService.cargarFacturas(socioService.getMapaSocios());
     }
-    public void guardarFacturas() throws PersistenciaException{
+
+    public void guardarFacturas() throws PersistenciaException {
         facturaService.guardarFacturas();
     }
-
 
     // ==========================================
     // DELEGACIÓN: EQUIPAMIENTO Y ALQUILERES
@@ -123,7 +140,7 @@ public class Logica {
     }
 
     public Alquiler alquilarEquipamiento(String idAlquiler, String dniSocio, String codigoEquipamiento,
-                                         int diasPrestamo)
+            int diasPrestamo)
             throws DatoInvalidoException {
         Socio socio = socioService.buscarSocio(dniSocio);
         if (socio == null) {
