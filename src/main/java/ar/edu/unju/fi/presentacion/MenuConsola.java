@@ -19,7 +19,6 @@ public class MenuConsola {
     private final ControlAcceso controlAcceso;
     private final Reportes reportes;
     private final Scanner scanner;
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public MenuConsola(Logica logica, ControlAcceso controlAcceso) {
         this.logica = logica;
@@ -40,9 +39,8 @@ public class MenuConsola {
                 case 4 -> menuFacturacion();
                 case 5 -> probarMolineteAcceso();
                 case 6 -> menuReportes();
-                case 0 -> System.out.println("\\nGuardando datos y saliendo del sistema...");
+                case 0 -> System.out.println("\nGuardando datos y saliendo del sistema...");
                 default -> System.out.println("Opción no válida. Intente nuevamente.");
-
             }
         } while (opcion != 0);
     }
@@ -81,7 +79,7 @@ public class MenuConsola {
                     String apellido = leerTexto("Apellido: ");
                     double cuota = leerDouble("Cuota Base: ");
                     logica.registrarSocio(new SocioEstandar(dni, nombre, apellido, cuota));
-                    System.out.println("Socio estándar registrado correctamente.");
+                    System.out.println(">> Socio estándar registrado correctamente.");
                 }
                 case 2 -> {
                     String dni = leerTexto("DNI: ");
@@ -90,7 +88,7 @@ public class MenuConsola {
                     double cuota = leerDouble("Cuota Base: ");
                     double recargo = leerDouble("Recargo Zonas Exclusivas: ");
                     logica.registrarSocio(new SocioVIP(dni, nombre, apellido, cuota, recargo));
-                    System.out.println("Socio VIP registrado correctamente.");
+                    System.out.println(">> Socio VIP registrado correctamente.");
                 }
                 case 3 -> {
                     String dni = leerTexto("DNI: ");
@@ -99,7 +97,7 @@ public class MenuConsola {
                     double cuota = leerDouble("Cuota Base: ");
                     double desc = leerDouble("Porcentaje de Descuento (%): ");
                     logica.registrarSocio(new SocioVitalicio(dni, nombre, apellido, cuota, desc));
-                    System.out.println("Socio Vitalicio registrado correctamente.");
+                    System.out.println(">> Socio Vitalicio registrado correctamente.");
                 }
                 case 4 -> {
                     String dni = leerTexto("DNI a buscar: ");
@@ -120,7 +118,7 @@ public class MenuConsola {
                 }
             }
         } catch (NegocioException e) {
-            System.err.println("Error de negocio: " + e.getMessage());
+            System.err.println(">> Error de negocio: " + e.getMessage());
         }
     }
 
@@ -142,7 +140,7 @@ public class MenuConsola {
                     String nom = leerTexto("Nombre: ");
                     double costo = leerDouble("Costo Alquiler: ");
                     logica.registrarEquipamiento(new Equipamiento(cod, nom, costo));
-                    System.out.println("Equipamiento registrado con éxito.");
+                    System.out.println(">> Equipamiento registrado con éxito.");
                 }
                 case 2 -> {
                     String idAlq = leerTexto("ID Alquiler: ");
@@ -150,20 +148,20 @@ public class MenuConsola {
                     String cod = leerTexto("Código Equipamiento: ");
                     int dias = leerEntero("Días de préstamo: ");
                     Alquiler alq = logica.alquilarEquipamiento(idAlq, dni, cod, dias);
-                    System.out.println("Alquiler registrado: " + alq);
+                    System.out.println(">> Alquiler registrado: " + alq);
                 }
                 case 3 -> {
                     String idAlq = leerTexto("ID Alquiler a devolver: ");
                     double tarifaMora = leerDouble("Tarifa mora diaria: ");
                     double mora = logica.devolverEquipamiento(idAlq, java.time.LocalDate.now(), tarifaMora);
-                    System.out.println("Devolución registrada. Recargo por mora liquidado: $" + mora);
+                    System.out.println(">> Devolución registrada. Recargo por mora liquidado: $" + mora);
                 }
                 case 4 -> {
                     logica.obtenerTodosLosEquipamientos().forEach(System.out::println);
                 }
             }
         } catch (NegocioException e) {
-            System.err.println("Error de negocio: " + e.getMessage());
+            System.err.println(">> Error de negocio: " + e.getMessage());
         }
     }
 
@@ -179,26 +177,38 @@ public class MenuConsola {
         try {
             switch (op) {
                 case 1 -> {
-                    String idRes = leerTexto("ID Reserva: ");
+                    String idRes = leerTexto("ID Reserva (ej. RES-01): ");
                     String act = leerTexto("Código Actividad (ej. NATACION, SPINNING): ");
                     String dni = leerTexto("DNI Socio: ");
-                    LocalDateTime fechaHora = LocalDateTime.now().withMinute(0).withSecond(0).plusDays(1);
+                    LocalDateTime fechaHora = leerFechaHora("Fecha y hora del turno (dd/MM/yyyy HH:mm) [ej. 10/11/2026 18:00]: ");
                     Reserva r = logica.registrarReserva(idRes, act, dni, fechaHora);
-                    System.out.println("Reserva completada exitosamente: " + r);
+                    System.out.println(">> Reserva completada exitosamente: " + r);
                 }
                 case 2 -> {
                     String act = leerTexto("Código Actividad: ");
                     Set<Reserva> res = logica.obtenerReservasPorActividad(act);
                     if (res.isEmpty()) {
-                        System.out.println("No hay reservas para la actividad: " + act);
+                        System.out.println("No hay reservas registradas para la actividad: " + act);
                     } else {
-                        System.out.println("Inscriptos en " + act.toUpperCase() + ":");
+                        System.out.println("\nInscriptos en " + act.toUpperCase() + ":");
                         res.forEach(r -> System.out.println("- " + r));
                     }
                 }
             }
         } catch (NegocioException e) {
-            System.err.println("Error de reserva: " + e.getMessage());
+            System.err.println(">> Error de reserva: " + e.getMessage());
+        }
+    }
+
+    private LocalDateTime leerFechaHora(String mensaje) {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        while (true) {
+            String texto = leerTexto(mensaje);
+            try {
+                return LocalDateTime.parse(texto, dtf);
+            } catch (Exception e) {
+                System.out.println("Formato de fecha u hora inválido. Debe usar exactamente el formato dd/MM/yyyy HH:mm (ej: 10/11/2026 18:00).");
+            }
         }
     }
 
@@ -219,7 +229,7 @@ public class MenuConsola {
                     String dni = leerTexto("DNI Socio: ");
                     String periodo = leerTexto("Periodo Fiscal (ej. 2026-11): ");
                     Factura f = logica.emitirFacturaCuota(numFac, dni, periodo);
-                    System.out.println("Factura emitida exitosamente: " + f);
+                    System.out.println(">> Factura emitida exitosamente: " + f);
                 }
                 case 2 -> {
                     String dni = leerTexto("DNI Socio: ");
@@ -241,7 +251,7 @@ public class MenuConsola {
                 }
             }
         } catch (NegocioException e) {
-            System.err.println("Error de facturación: " + e.getMessage());
+            System.err.println(">> Error de facturación: " + e.getMessage());
         }
     }
 
@@ -290,9 +300,9 @@ public class MenuConsola {
                 String dni = leerTexto("DNI a buscar mediante Binary Search: ");
                 Socio encontrado = reportes.buscarSocioPorDni(socios, dni);
                 if (encontrado != null) {
-                    System.out.println("Resultado de búsqueda binaria: " + encontrado);
+                    System.out.println(">> Resultado de búsqueda binaria: " + encontrado);
                 } else {
-                    System.out.println("Socio no encontrado con Collections.binarySearch.");
+                    System.out.println(">> Socio no encontrado con Collections.binarySearch.");
                 }
             }
         }
@@ -301,15 +311,24 @@ public class MenuConsola {
     // Métodos auxiliares de lectura limpia
     private String leerTexto(String mensaje) {
         System.out.print(mensaje);
+        if (!scanner.hasNextLine()) {
+            return "";
+        }
         return scanner.nextLine().trim();
     }
 
     private int leerEntero(String mensaje) {
         while (true) {
+            System.out.print(mensaje);
+            if (!scanner.hasNextLine()) {
+                return 0;
+            }
+            String linea = scanner.nextLine().trim();
+            if (linea.isEmpty()) {
+                continue;
+            }
             try {
-                System.out.print(mensaje);
-                int num = Integer.parseInt(scanner.nextLine().trim());
-                return num;
+                return Integer.parseInt(linea);
             } catch (NumberFormatException e) {
                 System.out.println("Entrada inválida. Debe ingresar un número entero.");
             }
@@ -320,12 +339,14 @@ public class MenuConsola {
         while (true) {
             try {
                 System.out.print(mensaje);
-                double num = Double.parseDouble(scanner.nextLine().trim());
-                return num;
+                if (!scanner.hasNextLine()) {
+                    return 0.0;
+                }
+                String linea = scanner.nextLine().trim();
+                return Double.parseDouble(linea);
             } catch (NumberFormatException e) {
                 System.out.println("Entrada inválida. Debe ingresar un número válido (ej. 1500.50).");
             }
         }
     }
-
 }

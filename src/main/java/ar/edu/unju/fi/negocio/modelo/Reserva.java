@@ -2,11 +2,14 @@ package ar.edu.unju.fi.negocio.modelo;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 public class Reserva implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private String idReserva;
     private String codigoActividad;
@@ -34,7 +37,8 @@ public class Reserva implements Serializable {
         this.idReserva = idReserva.trim();
         this.codigoActividad = codigoActividad.trim().toUpperCase();
         this.socio = socio;
-        this.fechaHora = fechaHora;
+        // Truncamos a minutos
+        this.fechaHora = fechaHora.truncatedTo(ChronoUnit.MINUTES);
 
 
     }
@@ -68,7 +72,7 @@ public class Reserva implements Serializable {
     }
 
     public void setFechaHora(LocalDateTime fechaHora) {
-        this.fechaHora = fechaHora;
+        this.fechaHora = fechaHora != null ? fechaHora.truncatedTo(ChronoUnit.MINUTES) : null;
     }
 
     /**
@@ -96,12 +100,11 @@ public class Reserva implements Serializable {
 
     @Override
     public String toString() {
-        return "Reserva{" +
-                "id='" + idReserva + '\'' +
+        String fechaFormateada = (fechaHora != null) ? fechaHora.format(FORMATO_FECHA) : "Sin fecha";
+        return "Reserva{id='" + idReserva + '\'' +
                 ", actividad='" + codigoActividad + '\'' +
-                ", socio=" + socio.getApellido() + " (" + socio.getDni() + ")" +
-                ", fechaHora=" + fechaHora +
-                '}';
+                ", socio=" + (socio != null ? socio.getApellido() + " (" + socio.getDni() + ")" : "null") +
+                ", turno=" + fechaFormateada + '}';
     }
 
 }

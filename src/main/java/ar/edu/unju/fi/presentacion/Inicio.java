@@ -5,7 +5,6 @@ import ar.edu.unju.fi.datos.excepciones.PersistenciaException;
 import ar.edu.unju.fi.negocio.ControlAcceso;
 import ar.edu.unju.fi.negocio.Logica;
 
-
 /**
  * Punto de entrada principal del sistema (Capa de Presentación).
  * Coordina la inicialización de las 3 capas, el arranque en frío,
@@ -23,7 +22,7 @@ public class Inicio {
         Logica logica = new Logica(accesoDatos);
         ControlAcceso controlAcceso = new ControlAcceso(logica);
 
-        // 3. Recuperación en frio de los 4 archivos canónicos en orden de dependencia
+        // 3. Recuperación en frío de los 4 archivos canónicos en orden de dependencia
         cargarDatosIniciales(logica);
 
         // 4. Mecanismo de persistencia garantizada ante cierre forzado (Shutdown Hook)
@@ -31,10 +30,10 @@ public class Inicio {
 
         // 5. Arranque de la interfaz de consola
         MenuConsola menu = new MenuConsola(logica, controlAcceso);
+        menu.iniciar();
 
-        // Guardando limpio al salir voluntariamente
-        guardarTodosLosDatos(logica);
-
+        // Nota: Al terminar main(), la JVM invoca automáticamente al Shutdown Hook,
+        // garantizando la persistencia sin duplicar escrituras en disco.
     }
 
     private static void cargarDatosIniciales(Logica logica) {
@@ -50,35 +49,22 @@ public class Inicio {
         }
     }
 
-    private static void guardarTodosLosDatos(Logica logica) {
-        try {
-            logica.guardarSocios();
-            logica.guardarEquipamientos();
-            logica.guardarReservas();
-            logica.guardarFacturas();
-            System.out.println("Todos los datos han sido persistidos correctamente en disco.");
-        } catch (PersistenciaException e) {
-            System.err.println("Error crítico al persistir datos: " + e.getMessage());
-        }
-    }
-
     /**
-     * Shutdown Hook: Hilo ejecutado por la JVM cuando el proceso se interrumpe
-     * abruptamente (Ctrl+C, kill, cierre de terminal de IntelliJ).
+     * Shutdown Hook: Hilo ejecutado por la JVM cuando el proceso finaliza normalmente
+     * o se interrumpe abruptamente (Ctrl+C, kill, cierre de terminal).
      */
     private static void registrarGanchoDeCierre(Logica logica) {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("\\n[SHUTDOWN-HOOK] Interrupción detectada. Asegurando persistencia de los 4 archivos...");
+            System.out.println("\n[SISTEMA] Persistiendo datos en disco antes de cerrar...");
             try {
                 logica.guardarSocios();
                 logica.guardarEquipamientos();
                 logica.guardarReservas();
                 logica.guardarFacturas();
-                System.out.println("[SHUTDOWN-HOOK] Persistencia forzada completada con éxito. Archivos consistentes.");
+                System.out.println("[SISTEMA] Persistencia integral completada con éxito (Socios, Equipamiento, Reservas, Facturas).");
             } catch (PersistenciaException e) {
-                System.err.println("[SHUTDOWN-HOOK] Falló la persistencia durante el cierre: " + e.getMessage());
+                System.err.println("[SISTEMA] Error crítico al persistir datos en cierre: " + e.getMessage());
             }
         }));
     }
-
 }
