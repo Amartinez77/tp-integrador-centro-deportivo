@@ -47,8 +47,10 @@
                 <version>3.2.0</version>
                 <configuration>
                     <mainClass>ar.edu.unju.fi.presentacion.Inicio</mainClass>
+                    <cleanupDaemonThreads>false</cleanupDaemonThreads>
                 </configuration>
             </plugin>
+
         </plugins>
     </build>
 </project>
