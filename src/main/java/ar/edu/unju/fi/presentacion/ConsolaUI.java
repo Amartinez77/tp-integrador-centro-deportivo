@@ -16,20 +16,25 @@ public class ConsolaUI {
     public static final String TITILAR = "\u001B[5m";
 
     /**
-     * Limpia la terminal de forma universal y segura.
-     * Compatible con Git Bash (MinTTY), Linux, macOS, PowerShell e IntelliJ.
+     * Limpieza universal de pantalla compatible con:
+     * - IntelliJ IDEA (botón Run / terminal interna)
+     * - VS Code (terminal integrada bash/powershell)
+     * - Git Bash / Linux / macOS (soporte ANSI nativo)
+     * - Windows CMD tradicional (fallback por scroll)
      */
     public static void limpiarPantalla() {
         try {
-            // Secuencia ANSI extendida:
-            // \033[H  -> Mueve cursor a la esquina superior izquierda (0,0)
-            // \033[2J -> Limpia toda la pantalla visible
-            // \033[3J -> Borra todo el historial de scrollback (evita que el texto quede arriba)
+            // 1. Enviamos secuencia ANSI (para terminales reales: Git Bash, VS Code, Linux, macOS)
             System.out.print("\033[H\033[2J\033[3J");
             System.out.flush();
+
+            // 2. Fallback de cortesía: 30 saltos de línea para visores planos tipo Run de IntelliJ
+            // En consolas sin emulación ANSI esto simula perfectamente el borrado.
+            System.out.print("\n".repeat(30));
+            System.out.flush();
         } catch (Exception e) {
-            // Fallback seguro: salto de líneas para separar vistas
-            System.out.println("\n".repeat(40));
+            // Protección ante entornos restringidos
+            System.out.println("\n".repeat(25));
         }
     }
 

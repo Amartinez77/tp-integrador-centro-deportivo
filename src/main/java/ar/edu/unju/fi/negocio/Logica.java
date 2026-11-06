@@ -10,6 +10,7 @@ import ar.edu.unju.fi.negocio.servicios.EquipamientoService;
 import ar.edu.unju.fi.negocio.servicios.FacturaService;
 import ar.edu.unju.fi.negocio.servicios.ReservaService;
 import ar.edu.unju.fi.negocio.servicios.SocioService;
+import ar.edu.unju.fi.negocio.servicios.ReporteService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ public class Logica {
     private final SocioService socioService;
     private final EquipamientoService equipamientoService;
     private final ReservaService reservaService;
+    private final ReporteService reporteService;
 
     public Logica(AccesoDatos accesoDatos) {
         if (accesoDatos == null) {
@@ -40,7 +42,7 @@ public class Logica {
         this.equipamientoService = new EquipamientoService(accesoDatos);
         this.reservaService = new ReservaService(accesoDatos);
         this.facturaService = new FacturaService(accesoDatos);
-        ;
+        this.reporteService = new ReporteService();
     }
 
     /**
@@ -216,6 +218,26 @@ public class Logica {
 
     public void guardarReservas() throws PersistenciaException {
         reservaService.guardarReservas();
+    }
+
+    // ==========================================
+    // DELEGACIÓN: REPORTES Y ORDENAMIENTOS
+    // ==========================================
+
+    public List<Socio> obtenerSociosOrdenadosPorApellido() {
+        return reporteService.ordenarSociosPorApellido(socioService.obtenerTodosLosSocios());
+    }
+
+    public List<Socio> obtenerSociosOrdenadosPorCuota() {
+        return reporteService.ordenarSociosPorCuota(socioService.obtenerTodosLosSocios());
+    }
+
+    public List<ActividadReporte> obtenerActividadesOrdenadasPorReservas() {
+        return reporteService.ordenarActividades(reservaService.obtenerTodasLasReservasPorActividad());
+    }
+
+    public Socio buscarSocioPorDniBinario(String dni) {
+        return reporteService.buscarSocioPorDni(socioService.obtenerTodosLosSocios(), dni);
     }
 
 }

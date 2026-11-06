@@ -2,7 +2,6 @@ package ar.edu.unju.fi.presentacion;
 
 import ar.edu.unju.fi.negocio.ControlAcceso;
 import ar.edu.unju.fi.negocio.Logica;
-import ar.edu.unju.fi.negocio.Reportes;
 import ar.edu.unju.fi.negocio.excepciones.AccesoDenegadoException;
 import ar.edu.unju.fi.negocio.excepciones.NegocioException;
 import ar.edu.unju.fi.negocio.modelo.*;
@@ -17,13 +16,11 @@ public class MenuConsola {
 
     private final Logica logica;
     private final ControlAcceso controlAcceso;
-    private final Reportes reportes;
     private final Scanner scanner;
 
     public MenuConsola(Logica logica, ControlAcceso controlAcceso) {
         this.logica = logica;
         this.controlAcceso = controlAcceso;
-        this.reportes = new Reportes();
         this.scanner = new Scanner(System.in);
     }
 
@@ -349,31 +346,50 @@ public class MenuConsola {
             System.out.println(ConsolaUI.AMARILLO + "0. Volver al Menú Principal" + ConsolaUI.RESET);
             op = leerEntero("Opción: ");
 
-            List<Socio> socios = logica.obtenerTodosLosSocios();
-
             switch (op) {
                 case 1 -> {
-                    List<Socio> ord = reportes.ordenarSociosPorApellido(socios);
-                    ord.forEach(s -> System.out.printf("• %-25s | DNI: %-10s | Categoría: %s\n",
-                            s.getApellido() + ", " + s.getNombre(), s.getDni(), s.getClass().getSimpleName()));
+                    ConsolaUI.limpiarPantalla();
+                    List<Socio> ord = logica.obtenerSociosOrdenadosPorApellido();
+                    if (ord.isEmpty()) {
+                        System.out.println("No hay socios registrados para generar el reporte.");
+                    } else {
+                        ord.forEach(s -> System.out.printf("• %-25s | DNI: %-10s | Categoría: %s\n",
+                                s.getApellido() + ", " + s.getNombre(), s.getDni(), s.getClass().getSimpleName()));
+                    }
+                    pausar();
                 }
                 case 2 -> {
-                    List<Socio> ord = reportes.ordenarSociosPorCuota(socios);
-                    ord.forEach(s -> System.out.printf("• %-25s | DNI: %-10s | Cuota Mensual: $%.2f\n",
-                            s.getApellido() + ", " + s.getNombre(), s.getDni(), s.calcularCuotaMensual()));
+                    ConsolaUI.limpiarPantalla();
+                    List<Socio> ord = logica.obtenerSociosOrdenadosPorCuota();
+                    if (ord.isEmpty()) {
+                        System.out.println("No hay socios registrados para generar el reporte.");
+                    } else {
+                        ord.forEach(s -> System.out.printf("• %-25s | DNI: %-10s | Cuota Mensual: $%.2f\n",
+                                s.getApellido() + ", " + s.getNombre(), s.getDni(), s.calcularCuotaMensual()));
+                    }
+                    pausar();
                 }
                 case 3 -> {
-                    List<ActividadReporte> actRep = reportes.ordenarActividades(logica.obtenerTodasLasReservasPorActividad());
-                    actRep.forEach(a -> System.out.printf("• Actividad: %-15s | Inscriptos: %d\n", a.getCodigoActividad(), a.getCantidadReservas()));
+                    ConsolaUI.limpiarPantalla();
+                    List<ActividadReporte> actRep = logica.obtenerActividadesOrdenadasPorReservas();
+                    if (actRep.isEmpty()) {
+                        System.out.println("No hay actividades con reservas registradas.");
+                    } else {
+                        actRep.forEach(a -> System.out.printf("• Actividad: %-15s | Inscriptos: %d\n",
+                                a.getCodigoActividad(), a.getCantidadReservas()));
+                    }
+                    pausar();
                 }
                 case 4 -> {
+                    ConsolaUI.limpiarPantalla();
                     String dni = leerTexto("DNI a buscar mediante Binary Search: ");
-                    Socio encontrado = reportes.buscarSocioPorDni(socios, dni);
+                    Socio encontrado = logica.buscarSocioPorDniBinario(dni);
                     if (encontrado != null) {
                         ConsolaUI.imprimirFichaSocio(encontrado, logica.tieneCuotasAlDia(encontrado.getDni()));
                     } else {
                         System.out.println(ConsolaUI.ROJO + "Socio no encontrado con Collections.binarySearch." + ConsolaUI.RESET);
                     }
+                    pausar();
                 }
                 case 0 -> {
                     System.out.println("Regresando...");
