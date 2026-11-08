@@ -5,6 +5,9 @@ import ar.edu.unju.fi.datos.excepciones.PersistenciaException;
 import ar.edu.unju.fi.negocio.ControlAcceso;
 import ar.edu.unju.fi.negocio.Logica;
 
+import javax.swing.*;
+import java.util.Scanner;
+
 /**
  * Punto de entrada principal del sistema (Capa de Presentación).
  * Coordina la inicialización de las 3 capas, el arranque en frío,
@@ -29,11 +32,37 @@ public class Inicio {
         registrarGanchoDeCierre(logica);
 
         // 5. Arranque de la interfaz de consola
-        MenuConsola menu = new MenuConsola(logica, controlAcceso);
-        menu.iniciar();
+        int opcionInterfaz = seleccionarModoInterfaz();
 
-        // Nota: Al terminar main(), la JVM invoca automáticamente al Shutdown Hook,
-        // garantizando la persistencia sin duplicar escrituras en disco.
+        if (opcionInterfaz == 1) {
+            // MODO CONSOLA
+            System.out.println("\n>> Iniciando interfaz de Consola...");
+            MenuConsola menu = new MenuConsola(logica, controlAcceso);
+            menu.iniciar();
+        } else {
+            // MODO GRÁFICO (SWING)
+            System.out.println("\n>> Iniciando interfaz Gráfica (Swing)...");
+            SwingUtilities.invokeLater(() -> {
+                VentanaPrincipal ventana = new VentanaPrincipal(logica, controlAcceso);
+                ventana.setVisible(true);
+            });
+        }
+    }
+
+    private static int seleccionarModoInterfaz() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("\n========================================");
+        System.out.println("  SELECCIONE EL MODO DE INTERFAZ");
+        System.out.println("========================================");
+        System.out.println("1. Modo Consola (Interactiva)");
+        System.out.println("2. Modo Gráfico (GUI Swing)");
+        System.out.print("Opción (1 o 2) [Defecto: 1]: ");
+
+        String entrada = scanner.nextLine().trim();
+        if ("2".equals(entrada)) {
+            return 2;
+        }
+        return 1;
     }
 
     private static void cargarDatosIniciales(Logica logica) {
