@@ -1,5 +1,6 @@
 package ar.edu.unju.fi.presentacion;
 
+import ar.edu.unju.fi.negocio.modelo.Alquiler;
 import ar.edu.unju.fi.negocio.modelo.Factura;
 import ar.edu.unju.fi.negocio.modelo.Socio;
 
@@ -65,5 +66,23 @@ public class ConsolaUI {
         System.out.printf(AMARILLO + "│" + RESET + " %-18s : %-33s " + AMARILLO + "│\n" + RESET, "Concepto", fac.getConcepto());
         System.out.printf(AMARILLO + "│" + RESET + " %-18s : $%-32.2f " + AMARILLO + "│\n" + RESET, "Monto Abonado", fac.getMontoTotal());
         System.out.println(AMARILLO + "└────────────────────────────────────────────────────────┘" + RESET);
+    }
+
+    public static void imprimirFichaAlquiler(Alquiler alq) {
+        String estado = alq.isDevuelto()
+                ? VERDE + "DEVUELTO" + RESET
+                : ROJO + NEGRITA + "EN PRÉSTAMO / ACTIVO" + RESET;
+
+        System.out.println(AZUL + "┌────────────────────────────────────────────────────────┐" + RESET);
+        System.out.printf(AZUL + "│" + RESET + " %-18s : %-33s " + AZUL + "│\n" + RESET, "ID Alquiler", alq.getIdAlquiler());
+        System.out.printf(AZUL + "│" + RESET + " %-18s : %-33s " + AZUL + "│\n" + RESET, "Socio DNI", alq.getSocio().getDni() + " (" + alq.getSocio().getApellido() + ")");
+        System.out.printf(AZUL + "│" + RESET + " %-18s : %-33s " + AZUL + "│\n" + RESET, "Equipo Código", alq.getEquipamiento().getCodigo() + " (" + alq.getEquipamiento().getNombre() + ")");
+        System.out.printf(AZUL + "│" + RESET + " %-18s : %-33s " + AZUL + "│\n" + RESET, "Fecha Préstamo", alq.getFechaAlquiler());
+        System.out.printf(AZUL + "│" + RESET + " %-18s : %-33s " + AZUL + "│\n" + RESET, "Límite Devolución", alq.getFechaLimiteDevolucion());
+        System.out.printf(AZUL + "│" + RESET + " %-18s : %-42s " + AZUL + "│\n" + RESET, "Estado", estado);
+        if (alq.isDevuelto()) {
+            System.out.printf(AZUL + "│" + RESET + " %-18s : $%-32.2f " + AZUL + "│\n" + RESET, "Mora Recargada", alq.getRecargoPorMora());
+        }
+        System.out.println(AZUL + "└────────────────────────────────────────────────────────┘" + RESET);
     }
 }

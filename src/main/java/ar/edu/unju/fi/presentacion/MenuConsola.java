@@ -31,12 +31,30 @@ public class MenuConsola {
             mostrarMenuPrincipal();
             opcion = leerEntero("Seleccione una opción: ");
             switch (opcion) {
-                case 1 -> { ConsolaUI.limpiarPantalla(); menuSocios(); }
-                case 2 -> { ConsolaUI.limpiarPantalla(); menuEquipamiento(); }
-                case 3 -> { ConsolaUI.limpiarPantalla(); menuReservas(); }
-                case 4 -> { ConsolaUI.limpiarPantalla(); menuFacturacion(); }
-                case 5 -> { ConsolaUI.limpiarPantalla(); probarMolineteAcceso(); }
-                case 6 -> { ConsolaUI.limpiarPantalla(); menuReportes(); }
+                case 1 -> {
+                    ConsolaUI.limpiarPantalla();
+                    menuSocios();
+                }
+                case 2 -> {
+                    ConsolaUI.limpiarPantalla();
+                    menuEquipamiento();
+                }
+                case 3 -> {
+                    ConsolaUI.limpiarPantalla();
+                    menuReservas();
+                }
+                case 4 -> {
+                    ConsolaUI.limpiarPantalla();
+                    menuFacturacion();
+                }
+                case 5 -> {
+                    ConsolaUI.limpiarPantalla();
+                    probarMolineteAcceso();
+                }
+                case 6 -> {
+                    ConsolaUI.limpiarPantalla();
+                    menuReportes();
+                }
                 case 0 -> System.out.println("\nSaliendo del sistema...");
                 default -> {
                     System.out.println(ConsolaUI.ROJO + "Opción no válida. Intente nuevamente." + ConsolaUI.RESET);
@@ -151,6 +169,7 @@ public class MenuConsola {
             System.out.println("2. Registrar Alquiler");
             System.out.println("3. Devolver Equipamiento");
             System.out.println("4. Listar Inventario");
+            System.out.println("5. Listar Registros de Alquileres");
             System.out.println(ConsolaUI.AMARILLO + "0. Volver al Menú Principal" + ConsolaUI.RESET);
             op = leerEntero("Opción: ");
 
@@ -189,6 +208,17 @@ public class MenuConsola {
                             lista.forEach(e -> System.out.printf("• [%s] %-25s | Costo: $%-8.2f | Estado: %s\n",
                                     e.getCodigo(), e.getNombre(), e.getCostoAlquiler(),
                                     (e.isDisponible() ? ConsolaUI.VERDE + "DISPONIBLE" : ConsolaUI.ROJO + "EN USO") + ConsolaUI.RESET));
+                        }
+                        pausar();
+                    }
+                    case 5 -> {
+                        ConsolaUI.limpiarPantalla();
+                        List<Alquiler> alquileres = logica.obtenerTodosLosAlquileres();
+                        if (alquileres.isEmpty()) {
+                            System.out.println("No hay registros de alquileres emitidos.");
+                        } else {
+                            System.out.println(ConsolaUI.CYAN + ConsolaUI.NEGRITA + "=== REGISTRO GENERAL DE ALQUILERES ===" + ConsolaUI.RESET);
+                            alquileres.forEach(ConsolaUI::imprimirFichaAlquiler);
                         }
                         pausar();
                     }
