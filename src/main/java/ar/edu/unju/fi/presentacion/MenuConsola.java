@@ -243,6 +243,7 @@ public class MenuConsola {
             System.out.println("\n" + ConsolaUI.CYAN + "--- GESTIÓN DE RESERVAS ---" + ConsolaUI.RESET);
             System.out.println("1. Inscribir Socio a una Actividad");
             System.out.println("2. Consultar Reservas de una Actividad");
+            System.out.println("3. Listar Actividades dadas de Alta");
             System.out.println(ConsolaUI.AMARILLO + "0. Volver al Menú Principal" + ConsolaUI.RESET);
             op = leerEntero("Opción: ");
 
@@ -250,23 +251,35 @@ public class MenuConsola {
                 switch (op) {
                     case 1 -> {
                         ConsolaUI.limpiarPantalla();
-                        String idRes = leerTexto("ID Reserva (ej. RES-01): ");
+                        mostrarActividadesDisponiblesConsola();
+                        String idRes = leerTexto("\nID Reserva (ej. RES-01): ");
                         String act = leerTexto("Código Actividad (ej. NATACION, SPINNING): ");
                         String dni = leerTexto("DNI Socio: ");
                         LocalDateTime fechaHora = leerFechaHora("Fecha y hora del turno (dd/MM/yyyy HH:mm) [ej. 10/11/2026 18:00]: ");
                         Reserva r = logica.registrarReserva(idRes, act, dni, fechaHora);
-                        System.out.println(ConsolaUI.VERDE + ">> Reserva completada: " + r + ConsolaUI.RESET);
+                        System.out.println(ConsolaUI.VERDE + ">> Reserva completada con éxito: " + r.getIdReserva() + ConsolaUI.RESET);
+                        pausar();
                     }
                     case 2 -> {
                         ConsolaUI.limpiarPantalla();
-                        String act = leerTexto("Código Actividad: ");
+                        mostrarActividadesDisponiblesConsola();
+                        String act = leerTexto("\nIngrese el Código de la Actividad a consultar: ");
                         Set<Reserva> res = logica.obtenerReservasPorActividad(act);
                         if (res.isEmpty()) {
-                            System.out.println("No hay reservas registradas para la actividad: " + act);
+                            System.out.println(ConsolaUI.ROJO + "No hay reservas registradas para la actividad: " + act + ConsolaUI.RESET);
                         } else {
-                            System.out.println("\nInscriptos en " + ConsolaUI.NEGRITA + act.toUpperCase() + ConsolaUI.RESET + ":");
-                            res.forEach(r -> System.out.println(" • " + r));
+                            System.out.println("\n" + ConsolaUI.CYAN + "Inscriptos en " + ConsolaUI.NEGRITA + act.toUpperCase() + ConsolaUI.RESET + ":");
+                            for (Reserva r : res) {
+                                String socioNom = (r.getSocio() != null) ? r.getSocio().getApellido() + " (" + r.getSocio().getDni() + ")" : "N/D";
+                                System.out.printf(" • ID: %-10s | Socio: %-30s | Turno: %s\n",
+                                        r.getIdReserva(), socioNom, r.getFechaHora());
+                            }
                         }
+                        pausar();
+                    }
+                    case 3 -> {
+                        ConsolaUI.limpiarPantalla();
+                        mostrarActividadesDisponiblesConsola();
                         pausar();
                     }
                     case 0 -> {
@@ -277,8 +290,22 @@ public class MenuConsola {
                 }
             } catch (NegocioException e) {
                 System.err.println(ConsolaUI.ROJO + ">> Error de reserva: " + e.getMessage() + ConsolaUI.RESET);
+                pausar();
             }
         } while (op != 0);
+    }
+
+    private void mostrarActividadesDisponiblesConsola() {
+        Set<String> actividades = logica.obtenerTodasLasReservasPorActividad().keySet();
+        System.out.println(ConsolaUI.AZUL + ConsolaUI.NEGRITA + "=== ACTIVIDADES CON RESERVAS REGISTRADAS ===" + ConsolaUI.RESET);
+        if (actividades.isEmpty()) {
+            System.out.println("No hay actividades registradas en el sistema aún.");
+        } else {
+            for (String act : actividades) {
+                int totalRes = logica.obtenerReservasPorActividad(act).size();
+                System.out.printf(" • %-20s (Inscriptos: %d)\n", act, totalRes);
+            }
+        }
     }
 
     // ==========================================

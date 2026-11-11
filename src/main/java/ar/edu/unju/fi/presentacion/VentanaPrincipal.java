@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -315,6 +316,9 @@ public class VentanaPrincipal extends JFrame {
         }
     }
 
+    private DefaultTableModel modelReservas;
+    private JComboBox<String> cbActividades;
+
     // ==========================================
     // 3. PANEL RESERVAS
     // ==========================================
@@ -322,25 +326,45 @@ public class VentanaPrincipal extends JFrame {
         JPanel panel = new JPanel(new BorderLayout(12, 12));
         panel.setBorder(new EmptyBorder(12, 12, 12, 12));
 
-        DefaultListModel<String> listModel = new DefaultListModel<>();
-        JList<String> lstReservas = new JList<>(listModel);
-        lstReservas.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        // Panel Superior de Filtro y Acciones
+        JPanel pnlTop = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
+        pnlTop.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), "Filtro de Actividades y Acciones", TitledBorder.LEFT, TitledBorder.TOP, new Font("Segoe UI", Font.BOLD, 12)));
 
-        JPanel pnlTop = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        JTextField txtActividad = new JTextField(12);
-        JButton btnBuscar = new JButton("Consultar Reservas");
+        cbActividades = new JComboBox<>();
+        cbActividades.setPreferredSize(new Dimension(180, 25));
+
+        JButton btnFiltrar = new JButton("Filtrar Reservas");
+        JButton btnVerTodas = new JButton("Ver Todas las Reservas");
         JButton btnNuevaReserva = new JButton("Nueva Reserva");
+        btnNuevaReserva.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnNuevaReserva.setBackground(new Color(40, 116, 166));
+        btnNuevaReserva.setForeground(Color.WHITE);
 
-        btnBuscar.addActionListener(e -> {
-            listModel.clear();
-            String cod = txtActividad.getText().trim();
-            Set<Reserva> res = logica.obtenerReservasPorActividad(cod);
-            if (res.isEmpty()) {
-                listModel.addElement("No existen reservas registradas para la actividad: " + cod);
+        pnlTop.add(new JLabel("Actividades Registradas:"));
+        pnlTop.add(cbActividades);
+        pnlTop.add(btnFiltrar);
+        pnlTop.add(btnVerTodas);
+        pnlTop.add(btnNuevaReserva);
+
+        // Tabla Principal de Reservas
+        modelReservas = crearModeloNoEditable(new String[]{"ID Reserva", "Actividad", "Socio (DNI / Nombre)", "Turno (Fecha y Hora)"});
+        JTable tblReservas = new JTable(modelReservas);
+        estilarTabla(tblReservas);
+
+        // Acciones de Botones
+        btnFiltrar.addActionListener(e -> {
+            String actSel = (String) cbActividades.getSelectedItem();
+            if (actSel != null && !actSel.startsWith("--")) {
+                actualizarTablaReservas(actSel);
             } else {
-                listModel.addElement("Reservas registradas para: " + cod.toUpperCase());
-                res.forEach(r -> listModel.addElement(" - " + r.toString()));
+                actualizarTablaReservas(null);
             }
+        });
+
+        btnVerTodas.addActionListener(e -> {
+            if (cbActividades.getItemCount() > 0) cbActividades.setSelectedIndex(0);
+            actualizarTablaReservas(null);
         });
 
         btnNuevaReserva.addActionListener(e -> {
@@ -348,30 +372,63 @@ public class VentanaPrincipal extends JFrame {
             JTextField txtAct = new JTextField();
             JTextField txtDni = new JTextField();
             JTextField txtFecha = new JTextField(LocalDateTime.now().plusDays(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
-            Object[] message = {"ID Reserva:", txtId, "Código Actividad:", txtAct, "DNI Socio:", txtDni, "Fecha/Hora (dd/MM/yyyy HH:mm):", txtFecha};
+            Object[] message = {"ID Reserva:", txtId, "Código Actividad (ej. NATACION):", txtAct, "DNI Socio:", txtDni, "Fecha/Hora (dd/MM/yyyy HH:mm):", txtFecha};
 
-            int option = JOptionPane.showConfirmDialog(this, message, "Registrar Reserva", JOptionPane.OK_CANCEL_OPTION);
+            int option = JOptionPane.showConfirmDialog(this, message, "Registrar Nueva Reserva", JOptionPane.OK_CANCEL_OPTION);
             if (option == JOptionPane.OK_OPTION) {
                 try {
                     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
                     LocalDateTime fh = LocalDateTime.parse(txtFecha.getText().trim(), dtf);
                     Reserva r = logica.registrarReserva(txtId.getText().trim(), txtAct.getText().trim(), txtDni.getText().trim(), fh);
-                    JOptionPane.showMessageDialog(this, "Reserva realizada: " + r);
+                    JOptionPane.showMessageDialog(this, "Reserva realizada con éxito: " + r.getIdReserva());
+                    actualizarTablaReservas(null);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
 
-        pnlTop.add(new JLabel("Actividad:"));
-        pnlTop.add(txtActividad);
-        pnlTop.add(btnBuscar);
-        pnlTop.add(btnNuevaReserva);
-
         panel.add(pnlTop, BorderLayout.NORTH);
-        panel.add(new JScrollPane(lstReservas), BorderLayout.CENTER);
+        panel.add(new JScrollPane(tblReservas), BorderLayout.CENTER);
 
+        actualizarTablaReservas(null);
         return panel;
+    }
+
+    private void actualizarTablaReservas(String actividadFiltrada) {
+        // 1. Actualizar el combo desplegable de actividades creadas
+        cbActividades.removeAllItems();
+        Set<String> actividadesExistentes = logica.obtenerTodasLasReservasPorActividad().keySet();
+
+        cbActividades.addItem("-- Todas las Actividades --");
+        for (String act : actividadesExistentes) {
+            cbActividades.addItem(act);
+        }
+
+        if (actividadFiltrada != null) {
+            cbActividades.setSelectedItem(actividadFiltrada);
+        }
+
+        // 2. Poblar la tabla de reservas
+        modelReservas.setRowCount(0);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+        Map<String, Set<Reserva>> mapaReservas = logica.obtenerTodasLasReservasPorActividad();
+        for (Map.Entry<String, Set<Reserva>> entry : mapaReservas.entrySet()) {
+            String act = entry.getKey();
+            if (actividadFiltrada == null || actividadFiltrada.equalsIgnoreCase(act)) {
+                for (Reserva r : entry.getValue()) {
+                    String socioInfo = (r.getSocio() != null) ? r.getSocio().getApellido() + ", " + r.getSocio().getNombre() + " (" + r.getSocio().getDni() + ")" : "N/D";
+                    String fechaStr = (r.getFechaHora() != null) ? r.getFechaHora().format(dtf) : "N/D";
+                    modelReservas.addRow(new Object[]{
+                            r.getIdReserva(),
+                            r.getCodigoActividad(),
+                            socioInfo,
+                            fechaStr
+                    });
+                }
+            }
+        }
     }
 
     // ==========================================
